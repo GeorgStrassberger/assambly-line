@@ -1,0 +1,76 @@
+name: Assambly Iron-Plate
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  Miner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mining iron-ore
+        run: |
+          mkdir build
+          touch build/iron-ore.txt
+          echo "iron" > build/iron-ore.txt
+
+      - name: Upload artifact (iron-ore)
+        uses: actions/upload-artifact@v4
+        with:
+          name: iron-ore
+          path: build/
+
+  Smelter:
+    runs-on: ubuntu-latest
+    needs: Miner
+    steps:
+      - name: Download artifact (from Miner)
+        uses: actions/download-artifact@v4
+        with:
+          name: iron-ore
+          path: build
+
+      - name: iron-ore to iron-ingot
+        run: mv build/iron-ore.txt build/iron-ingot.txt
+
+      - name: Upload artifact (iron-ingot)
+        uses: actions/upload-artifact@v4
+        with:
+          name: iron-ingot
+          path: build/
+
+  Constructor:
+    runs-on: ubuntu-latest
+    needs: Smelter
+    steps:
+      - name: Download artifact (from Smelter)
+        uses: actions/download-artifact@v4
+        with:
+          name: iron-ingot
+          path: build
+
+      - name: iron-ingot to iron-plate
+        run: mv build/iron-ingot.txt build/iron-plate.txt
+
+      - name: Upload artifact (final iron-plate)
+        uses: actions/upload-artifact@v4
+        with:
+          name: iron-plate
+          path: build
+
+  Container:
+    runs-on: ubuntu-latest
+    needs: Constructor
+    steps:
+      - name: Download artifact (from constructor)
+        uses: actions/download-artifact@v4
+        with:
+          name: iron-plate
+          path: build
+
+      - name: Show Result
+        run: |
+          ls -lh build
+          cat build/iron-plate.txt
